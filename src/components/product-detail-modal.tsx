@@ -1,4 +1,4 @@
-// src/components/product-detail-modal.tsx - PERBAIKAN VERSION
+// src/components/product-detail-modal.tsx - FIX DIALOG ERROR
 "use client"
 
 import { useState, useEffect } from "react"
@@ -21,7 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { SafeImage } from "@/components/ui/safe-image"
-import { useCart } from "@/context/cart-context" // ✅ TAMBAH useCart hook
+import { useCart } from "@/context/cart-context"
 import { useToast } from "@/hooks/use-toast"
 
 interface Product {
@@ -57,10 +57,10 @@ export function ProductDetailModal({ productId, open, onOpenChange }: ProductDet
   const [loading, setLoading] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const { addItem } = useCart() // ✅ TAMBAH useCart hook
+  const { addItem } = useCart()
   const { toast } = useToast()
 
-  // ✅ PERBAIKI: Fetch product data when modal opens
+  // Fetch product data when modal opens
   useEffect(() => {
     if (open && productId) {
       fetchProduct()
@@ -92,7 +92,6 @@ export function ProductDetailModal({ productId, open, onOpenChange }: ProductDet
     }
   }
 
-  // ✅ PERBAIKI: Add to cart functionality
   const handleAddToCart = () => {
     if (!product) return
     
@@ -123,7 +122,6 @@ export function ProductDetailModal({ productId, open, onOpenChange }: ProductDet
     })
   }
 
-  // ✅ TAMBAH: Buy now via WhatsApp functionality
   const handleBuyNow = () => {
     if (!product) return
     
@@ -180,6 +178,13 @@ export function ProductDetailModal({ productId, open, onOpenChange }: ProductDet
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+        {/* ✅ FIX: Add DialogTitle for accessibility */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>
+            {product ? `Detail Produk: ${product.name}` : "Detail Produk"}
+          </DialogTitle>
+        </DialogHeader>
+        
         {loading ? (
           <div className="flex items-center justify-center h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -252,14 +257,15 @@ export function ProductDetailModal({ productId, open, onOpenChange }: ProductDet
 
             {/* Product Info */}
             <div className="p-6 overflow-y-auto">
-              <DialogHeader className="mb-4">
+              {/* Product Header */}
+              <div className="mb-4">
                 <div className="text-sm text-muted-foreground mb-2">
                   {product.category?.name}
                 </div>
-                <DialogTitle className="text-xl font-bold leading-tight">
+                <h1 className="text-xl font-bold leading-tight mb-2">
                   {product.name}
-                </DialogTitle>
-              </DialogHeader>
+                </h1>
+              </div>
 
               {/* Price */}
               <div className="mb-4">
