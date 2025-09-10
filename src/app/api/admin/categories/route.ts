@@ -1,4 +1,3 @@
-// src/app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -9,10 +8,7 @@ const categorySchema = z.object({
   name: z.string().min(1, "Category name is required"),
   slug: z.string().min(1, "Slug is required"),
   description: z.string().optional(),
-  image: z.string().optional(),
-  images: z.array(z.string()).optional(),
   isActive: z.boolean().default(true),
-  sortOrder: z.number().int().optional(),
 })
 
 // GET /api/admin/categories - List all categories (admin only)
@@ -25,17 +21,7 @@ export async function GET() {
     }
 
     const categories = await prisma.category.findMany({
-      include: {
-        _count: {
-          select: {
-            products: true
-          }
-        }
-      },
-      orderBy: [
-        { sortOrder: "asc" },
-        { name: "asc" }
-      ],
+      orderBy: { name: "asc" },
     })
 
     return NextResponse.json(categories)
@@ -72,15 +58,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Set default sort order if not provided
-    const sortOrder = validatedData.sortOrder ?? await getNextSortOrder()
-
     const category = await prisma.category.create({
       data: {
         ...validatedData,
-        image: validatedData.images?.[0] || validatedData.image || null,
-        images: validatedData.images || [],
-        sortOrder,
       },
     })
 
@@ -99,12 +79,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
-}
-
-// Helper function to get next sort order
-async function getNextSortOrder(): Promise<number> {
-  const lastCategory = await prisma.category.findFirst({
-    orderBy: { sortOrder: "desc" }
-  })
-  return (lastCategory?.sortOrder || 0) + 1
 }
