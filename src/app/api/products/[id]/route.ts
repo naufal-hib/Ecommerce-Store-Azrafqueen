@@ -1,4 +1,4 @@
-// src/app/api/products/[id]/route.ts
+// src/app/api/products/[id]/route.ts - PERBAIKAN VERSION
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -22,7 +22,7 @@ const productUpdateSchema = z.object({
   isFeatured: z.boolean(),
 })
 
-// GET /api/products/[id] - Get single product
+// ✅ PERBAIKI: GET /api/products/[id] - Get single product
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -30,12 +30,41 @@ export async function GET(
   try {
     const { id } = await params
 
+    // ✅ OPTIMIZED: Only select necessary fields for better performance
     const product = await prisma.product.findUnique({
-      where: { id },
-      include: {
-        category: true,
+      where: { 
+        id: id,
+        isActive: true  // ✅ TAMBAH: Hanya product yang aktif
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        price: true,
+        salePrice: true,
+        sku: true,
+        stock: true,
+        images: true,
+        tags: true,
+        weight: true,
+        dimensions: true,
+        isActive: true,
+        isFeatured: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        },
+        // ✅ OPTIMIZED: Limit reviews untuk performance
         reviews: {
-          include: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
             user: {
               select: {
                 name: true,
@@ -48,29 +77,47 @@ export async function GET(
           },
           orderBy: {
             createdAt: "desc"
-          }
+          },
+          take: 10 // ✅ LIMIT: Hanya 10 review terbaru
         }
       }
     })
 
     if (!product) {
       return NextResponse.json(
-        { error: "Product not found" },
+        { error: "Produk tidak ditemukan" },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(product)
+    // ✅ PERBAIKI: Convert Decimal to number for client
+    const productForClient = {
+      ...product,
+      price: Number(product.price),
+      salePrice: product.salePrice ? Number(product.salePrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    }
+
+    // ✅ PERFORMANCE: Add cache headers
+    return new NextResponse(JSON.stringify(productForClient), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        // Cache for 5 minutes
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    })
+
   } catch (error) {
     console.error("Error fetching product:", error)
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Terjadi kesalahan internal server" },
       { status: 500 }
     )
   }
 }
 
-// PUT /api/products/[id] - Update product
+// PUT /api/products/[id] - Update product (ADMIN ONLY)
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -156,7 +203,15 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json(product)
+    // ✅ PERBAIKI: Convert Decimal to number
+    const productForClient = {
+      ...product,
+      price: Number(product.price),
+      salePrice: product.salePrice ? Number(product.salePrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    }
+
+    return NextResponse.json(productForClient)
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -173,7 +228,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/products/[id] - Delete product
+// DELETE /api/products/[id] - Delete product (ADMIN ONLY)
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

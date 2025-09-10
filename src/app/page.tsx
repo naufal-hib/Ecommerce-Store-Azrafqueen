@@ -1,7 +1,6 @@
-// src/app/page.tsx
-import { ShoppingCart, Truck, Shield, Eye, Star, ArrowRight, CheckCircle } from "lucide-react"
+// src/app/page.tsx - PERBAIKAN VERSION
+import { ShoppingCart, Truck, Shield, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { SafeImage } from "@/components/ui/safe-image"
@@ -10,7 +9,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { convertProductsArrayForClient, convertCategoriesArrayForClient } from "@/lib/data-converter"
 
-// Function to get featured products from database
+// ✅ SUDAH BENAR: Function mengambil data dari database
 async function getFeaturedProducts() {
   try {
     const products = await prisma.product.findMany({
@@ -18,8 +17,22 @@ async function getFeaturedProducts() {
         isActive: true,
         isFeatured: true,
       },
-      include: {
-        category: true,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        salePrice: true,
+        sku: true, // ✅ TAMBAH: Include SKU
+        stock: true,
+        images: true,
+        isFeatured: true,
+        category: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       take: 8,
       orderBy: { createdAt: "desc" },
@@ -33,7 +46,7 @@ async function getFeaturedProducts() {
   }
 }
 
-// Function to get categories from database
+// ✅ SUDAH BENAR: Function mengambil data dari database
 async function getCategories() {
   try {
     const categories = await prisma.category.findMany({
@@ -59,252 +72,227 @@ async function getCategories() {
   }
 }
 
-// Sample data for demo purposes jika database kosong
+// ✅ PERBAIKI: Sample data sesuai Azrafqueen Store (bukan hardcode, hanya fallback)
 const sampleCategories = [
   {
     id: "sample-1",
     name: "Hijab & Kerudung",
     slug: "hijab-kerudung",
-    description: "Koleksi hijab dan kerudung modern",
-    images: ["https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=500"],
+    description: "Koleksi hijab dan kerudung modern berkualitas tinggi",
+    images: ["https://images.unsplash.com/photo-1583846082293-3de8c4d5b5da?w=600"],
     _count: { products: 25 }
   },
   {
     id: "sample-2", 
-    name: "Gamis & Dress",
-    slug: "gamis-dress",
-    description: "Gamis cantik untuk berbagai acara",
-    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500"],
+    name: "Abaya",
+    slug: "abaya",
+    description: "Abaya elegan untuk berbagai acara",
+    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600"],
     _count: { products: 18 }
   },
   {
     id: "sample-3",
-    name: "Mukena & Telekung",
-    slug: "mukena-telekung", 
-    description: "Mukena dan telekung berkualitas",
-    images: ["https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500"],
+    name: "Alquran & Produk Islami",
+    slug: "alquran-islami", 
+    description: "Alquran dan perlengkapan ibadah berkualitas",
+    images: ["https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=600"],
     _count: { products: 12 }
   },
   {
     id: "sample-4",
-    name: "Tunik & Atasan",
-    slug: "tunik-atasan",
-    description: "Tunik dan atasan casual modern",
-    images: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500"],
-    _count: { products: 15 }
+    name: "Baju Muslim Anak",
+    slug: "baju-muslim-anak",
+    description: "Busana muslim anak yang nyaman dan trendy",
+    images: ["https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600"],
+    _count: { products: 30 }
   },
   {
     id: "sample-5",
-    name: "Celana & Rok",
-    slug: "celana-rok",
-    description: "Celana dan rok muslimah",
-    images: ["https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=500"],
-    _count: { products: 20 }
-  },
-  {
-    id: "sample-6",
-    name: "Aksesoris",
-    slug: "aksesoris",
-    description: "Aksesoris muslimah",
-    images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=500"],
-    _count: { products: 8 }
+    name: "Kerudung Anak",
+    slug: "kerudung-anak",
+    description: "Kerudung khusus anak-anak dengan motif lucu",
+    images: ["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600"],
+    _count: { products: 15 }
   }
 ]
 
+// ✅ PERBAIKI: Sample products sesuai Azrafqueen Store (bukan hardcode, hanya fallback)
 const sampleProducts = [
   {
     id: "sample-p1",
-    name: "Hijab Voal Premium Quality",
-    slug: "hijab-voal-premium",
-    price: 75000,
-    salePrice: 60000,
+    name: "Hijab Pashmina Premium Ceruti Bubble",
+    slug: "hijab-pashmina-premium-ceruti",
+    price: 89000,
+    salePrice: 69000,
+    sku: "HPC001", // ✅ TAMBAH: Include SKU
     stock: 25,
-    images: ["https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=500"],
-    category: { id: "1", name: "Hijab" },
+    images: ["https://images.unsplash.com/photo-1583846082293-3de8c4d5b5da?w=600"],
+    category: { id: "sample-1", name: "Hijab & Kerudung" },
     isFeatured: true
   },
   {
     id: "sample-p2",
-    name: "Gamis Katun Rayon Elegant",
-    slug: "gamis-katun-rayon",
-    price: 285000,
-    stock: 15,
-    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500"],
-    category: { id: "2", name: "Gamis" },
+    name: "Abaya Dubai Bordir Mewah",
+    slug: "abaya-dubai-bordir-mewah",
+    price: 485000,
+    salePrice: 425000,
+    sku: "ADB001", // ✅ TAMBAH: Include SKU
+    stock: 12,
+    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600"],
+    category: { id: "sample-2", name: "Abaya" },
     isFeatured: true
   },
   {
     id: "sample-p3",
-    name: "Mukena Sutra Lembut Premium",
-    slug: "mukena-sutra-lembut",
-    price: 450000,
-    salePrice: 380000,
-    stock: 8,
-    images: ["https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500"],
-    category: { id: "3", name: "Mukena" },
+    name: "Alquran Tajwid Al-Mizan Ukuran Sedang",
+    slug: "alquran-tajwid-al-mizan",
+    price: 145000,
+    salePrice: null,
+    sku: "ATM001", // ✅ TAMBAH: Include SKU
+    stock: 15,
+    images: ["https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=600"],
+    category: { id: "sample-3", name: "Alquran & Produk Islami" },
     isFeatured: true
   },
   {
     id: "sample-p4",
-    name: "Tunik Casual Modern Style",
-    slug: "tunik-casual-modern",
-    price: 165000,
+    name: "Baju Koko Anak Lengan Panjang",
+    slug: "baju-koko-anak-lengan-panjang",
+    price: 89000,
+    salePrice: 75000,
+    sku: "BKA001", // ✅ TAMBAH: Include SKU
     stock: 30,
-    images: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=500"],
-    category: { id: "4", name: "Tunik" },
+    images: ["https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600"],
+    category: { id: "sample-4", name: "Baju Muslim Anak" },
     isFeatured: true
   },
   {
     id: "sample-p5",
-    name: "Celana Kulot Plisket Casual",
-    slug: "celana-kulot-plisket",
-    price: 125000,
-    salePrice: 99000,
-    stock: 20,
-    images: ["https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=500"],
-    category: { id: "5", name: "Celana" },
+    name: "Kerudung Anak Motif Unicorn",
+    slug: "kerudung-anak-motif-unicorn",
+    price: 35000,
+    salePrice: null,
+    sku: "KAU001", // ✅ TAMBAH: Include SKU
+    stock: 35,
+    images: ["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600"],
+    category: { id: "sample-5", name: "Kerudung Anak" },
     isFeatured: true
   },
   {
     id: "sample-p6",
-    name: "Kerudung Segi Empat Motif",
-    slug: "kerudung-segi-empat-motif",
+    name: "Kerudung Voal Polos Daily",
+    slug: "kerudung-voal-polos-daily",
     price: 45000,
-    stock: 50,
-    images: ["https://images.unsplash.com/photo-1586072306985-bdf3e6cd5cb7?w=500"],
-    category: { id: "1", name: "Hijab" },
+    salePrice: null,
+    sku: "KVP001", // ✅ TAMBAH: Include SKU
+    stock: 40,
+    images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600"],
+    category: { id: "sample-1", name: "Hijab & Kerudung" },
     isFeatured: true
   },
   {
     id: "sample-p7",
-    name: "Dress Casual Muslim Modern",
-    slug: "dress-casual-muslim",
-    price: 195000,
-    salePrice: 165000,
-    stock: 12,
-    images: ["https://images.unsplash.com/photo-1566479179817-0d7b0b10acc7?w=500"],
-    category: { id: "2", name: "Dress" },
+    name: "Abaya Syari Simple Elegant",
+    slug: "abaya-syari-simple-elegant",
+    price: 225000,
+    salePrice: null,
+    sku: "ASS001", // ✅ TAMBAH: Include SKU
+    stock: 18,
+    images: ["https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600"],
+    category: { id: "sample-2", name: "Abaya" },
     isFeatured: true
   },
   {
     id: "sample-p8",
-    name: "Tas Selempang Muslimah",
-    slug: "tas-selempang-muslimah",
-    price: 85000,
-    stock: 18,
-    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"],
-    category: { id: "6", name: "Aksesoris" },
+    name: "Gamis Anak Perempuan Motif Bunga",
+    slug: "gamis-anak-perempuan-motif-bunga",
+    price: 95000,
+    salePrice: null,
+    sku: "GAP001", // ✅ TAMBAH: Include SKU
+    stock: 20,
+    images: ["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600"],
+    category: { id: "sample-4", name: "Baju Muslim Anak" },
     isFeatured: true
   }
 ]
 
 export default async function Home() {
-  // Fetch data from database
+  // ✅ SUDAH BENAR: Fetch data dari database terlebih dahulu
   const featuredProducts = await getFeaturedProducts()
   const categories = await getCategories()
 
-  // Use sample data if database is empty
+  // ✅ SUDAH BENAR: Gunakan sample data HANYA jika database kosong
   const displayCategories = categories.length > 0 ? categories : sampleCategories
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : sampleProducts
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary via-primary/90 to-secondary py-20 lg:py-32 text-primary-foreground overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="relative bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-20">
+        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-              Selamat Datang di <br />
-              <span className="bg-gradient-to-r from-white to-primary-foreground/80 bg-clip-text text-transparent">
-                Azrafqueen Store
-              </span>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Azrafqueen Store
             </h1>
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed text-primary-foreground/90">
-              Koleksi fashion muslimah terlengkap dengan kualitas premium. 
-              Tampil elegan dan percaya diri dengan pilihan busana yang syar&apos;i dan modern.
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Toko Online Terpercaya untuk Busana Muslim Wanita & Anak
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button size="lg" className="bg-white text-primary hover:bg-gray-100 hover:text-primary/90 font-semibold" asChild>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" asChild>
                 <Link href="/products">
                   <ShoppingCart className="mr-2 h-5 w-5" />
                   Belanja Sekarang
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-semibold" asChild>
+              <Button variant="outline" size="lg" asChild>
                 <Link href="/categories">
-                  <Eye className="mr-2 h-5 w-5" />
                   Lihat Kategori
                 </Link>
               </Button>
-            </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-2xl font-bold">1000+</div>
-                <div className="text-sm text-primary-foreground/80">Produk</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">50+</div>
-                <div className="text-sm text-primary-foreground/80">Kategori</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">5000+</div>
-                <div className="text-sm text-primary-foreground/80">Pelanggan</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">4.8⭐</div>
-                <div className="text-sm text-primary-foreground/80">Rating</div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
+      {/* Features Section */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Mengapa Memilih Azrafqueen?</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Kami berkomitmen memberikan pengalaman berbelanja terbaik dengan produk berkualitas dan pelayanan prima
-            </p>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Truck className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Pengiriman Cepat</h3>
-              <p className="text-muted-foreground">
-                Gratis ongkir untuk pembelian di atas Rp 100.000. Pengiriman ke seluruh Indonesia dalam 1-7 hari kerja.
-              </p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Kualitas Terjamin</h3>
-              <p className="text-muted-foreground">
-                Semua produk telah melalui quality control ketat. Garansi 100% uang kembali jika tidak sesuai.
-              </p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Pelayanan 24/7</h3>
-              <p className="text-muted-foreground">
-                Tim customer service siap membantu Anda kapanpun. Chat langsung via WhatsApp atau email.
-              </p>
-            </div>
+            <Card className="text-center">
+              <CardHeader>
+                <Truck className="h-12 w-12 mx-auto text-primary mb-4" />
+                <CardTitle>Pengiriman Cepat</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Pengiriman ke seluruh Indonesia dengan berbagai pilihan ekspedisi terpercaya
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardHeader>
+                <Shield className="h-12 w-12 mx-auto text-primary mb-4" />
+                <CardTitle>Kualitas Terjamin</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Produk berkualitas tinggi dengan bahan pilihan dan jahitan yang rapi
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardHeader>
+                <CheckCircle className="h-12 w-12 mx-auto text-primary mb-4" />
+                <CardTitle>Terpercaya Sejak 2015</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Dipercaya ribuan pelanggan di seluruh Indonesia dengan pelayanan terbaik
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -314,30 +302,34 @@ export default async function Home() {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Kategori Populer</h2>
+              <h2 className="text-3xl font-bold mb-4">Kategori Produk</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Jelajahi berbagai kategori produk muslimah pilihan dengan kualitas terbaik
+                Pilih kategori sesuai kebutuhan Anda. Kami menyediakan berbagai produk muslimah berkualitas
               </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {displayCategories.slice(0, 6).map((category) => (
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayCategories.map((category) => (
                 <Link key={category.id} href={`/products?category=${category.id}`}>
-                  <Card className="group hover:shadow-lg transition-all duration-300 text-center">
-                    <CardContent className="p-6">
-                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors overflow-hidden">
+                  <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer">
+                    <CardHeader className="p-0">
+                      <div className="aspect-square overflow-hidden bg-gray-100 relative">
                         {category.images?.[0] ? (
                           <SafeImage
                             src={category.images[0]}
                             alt={category.name}
-                            width={32}
-                            height={32}
-                            className="rounded-full object-cover w-8 h-8"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                             fallbackType="category"
                           />
                         ) : (
-                          <ShoppingCart className="h-8 w-8 text-primary" />
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <ShoppingCart className="h-12 w-12 text-primary" />
+                          </div>
                         )}
                       </div>
+                    </CardHeader>
+                    <CardContent className="p-4 text-center">
                       <h3 className="font-medium mb-2 group-hover:text-primary transition-colors">
                         {category.name}
                       </h3>
@@ -349,6 +341,7 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
+            
             <div className="text-center mt-8">
               <Button variant="outline" asChild>
                 <Link href="/categories">
@@ -361,32 +354,29 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Featured Products */}
+      {/* Featured Products Section */}
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Produk Unggulan</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Koleksi terbaru dan terpopuler dengan kualitas premium dan desain yang menarik. 
-              Klik produk untuk melihat detail lengkap!
+              Koleksi terbaru dan terpopuler dengan kualitas premium dan desain yang menarik
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {displayProducts.slice(0, 8).map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-                showQuickView={true}
-              />
-            ))}
-          </div>
+          {displayProducts.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
           
-          <div className="text-center">
-            <Button asChild size="lg">
+          <div className="text-center mt-12">
+            <Button size="lg" asChild>
               <Link href="/products">
                 Lihat Semua Produk
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
@@ -394,25 +384,28 @@ export default async function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-16 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Dapatkan Update Terbaru</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto text-primary-foreground/90">
-            Berlangganan newsletter kami untuk mendapatkan info produk baru, promo eksklusif, dan tips fashion muslimah
-          </p>
-          <div className="max-w-md mx-auto flex gap-2">
-            <Input
-              type="email"
-              placeholder="Masukkan email Anda"
-              className="bg-white text-gray-900"
-            />
-            <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100">
-              Subscribe
-            </Button>
-          </div>
-          <p className="text-sm text-primary-foreground/80 mt-4">
-            Kami menghargai privasi Anda. Email tidak akan dibagikan kepada pihak ketiga.
-          </p>
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-2xl mx-auto text-center">
+            <CardHeader>
+              <CardTitle className="text-2xl">Berlangganan Newsletter</CardTitle>
+              <p className="text-muted-foreground">
+                Dapatkan info produk terbaru dan penawaran menarik langsung ke email Anda
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="email"
+                  placeholder="Masukkan email Anda"
+                  className="flex-1 px-4 py-2 border border-input rounded-md"
+                />
+                <Button>
+                  Berlangganan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>
